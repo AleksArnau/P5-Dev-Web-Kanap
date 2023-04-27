@@ -55,6 +55,74 @@ function msgEmptyCart() {
   document.querySelector(".cart__price").style.display = "none";
 }
 
+//On crée le html du DOM pour chaque produit du panier
+function createProductHtml(product) {
+  let article = document.createElement("article");
+  article.setAttribute("class", "cart__item");
+  article.setAttribute("data-id", product._id);
+  article.setAttribute("data-color", product.color);
+  document.getElementById("cart__items").appendChild(article);
+
+  let divImg = document.createElement("div");
+  divImg.setAttribute("class", "cart__item__img");
+  article.appendChild(divImg);
+
+  let img = document.createElement("img");
+  img.setAttribute("src", product.img);
+  img.setAttribute("alt", "Photographie d'un canapé");
+  divImg.appendChild(img);
+
+  let divContent = document.createElement("div");
+  divContent.setAttribute("class", "cart__item__content");
+  article.appendChild(divContent);
+
+  let description = document.createElement("div");
+  description.setAttribute("class", "cart__item__content__description");
+  divContent.appendChild(description);
+
+  let h2 = document.createElement("h2");
+  h2.innerText = product.name;
+  description.appendChild(h2);
+
+  let color = document.createElement("p");
+  color.innerText = product.color;
+  description.appendChild(color);
+
+  let price = document.createElement("p");
+  price.innerText = product.price + " €";
+  description.appendChild(price);
+
+  let divSettings = document.createElement("div");
+  divSettings.setAttribute("class", "cart__item__content__settings");
+  divContent.appendChild(divSettings);
+
+  let divQuantity = document.createElement("div");
+  divQuantity.setAttribute("class", "cart__item__content__settings__quantity");
+  divSettings.appendChild(divQuantity);
+
+  let quantity = document.createElement("p");
+  quantity.innerText = "Qté :";
+  divQuantity.appendChild(quantity);
+
+  let quantityInput = document.createElement("input");
+  quantityInput.setAttribute("type", "number");
+  quantityInput.setAttribute("class", "itemQuantity");
+  quantityInput.setAttribute("name", "itemQuantity");
+  quantityInput.setAttribute("min", "1");
+  quantityInput.setAttribute("max", "100");
+  quantityInput.setAttribute("value", product.quantity);
+  divQuantity.appendChild(quantityInput);
+
+  let divDelete = document.createElement("div");
+  divDelete.setAttribute("class", "cart__item__content__settings__delete");
+  divSettings.appendChild(divDelete);
+
+  let pDelete = document.createElement("p");
+  pDelete.setAttribute("class", "deleteItem");
+  pDelete.innerText = "Supprimer";
+  divDelete.appendChild(pDelete);
+}
+
 //Affiche les elements du panier dans le DOM
 async function showCart() {
   const cartDom = await fetchProducts();
@@ -64,27 +132,7 @@ async function showCart() {
   } else {
     const zonePanier = document.querySelector("#cart__items");
     cartDom.forEach((product) => {
-      zonePanier.innerHTML += `<article class="cart__item" data-id="${product._id}" data-color="${product.color}">
-              <div class="cart__item__img">
-                <img src= "${product.img}" alt="Photographie d'un producté">
-              </div>
-              <div class="cart__item__content">
-                <div class="cart__item__content__description">
-                  <h2>${product.name}</h2>
-                  <p>${product.color}</p>
-                  <p>${product.price} €</p>
-                </div>
-                <div class="cart__item__content__settings">
-                  <div class="cart__item__content__settings__quantity">
-                    <p>Qté : </p>
-                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.quantity}">
-                  </div>
-                  <div class="cart__item__content__settings__delete">
-                    <p class="deleteItem">Supprimer</p>
-                  </div>
-                </div>
-              </div>
-            </article>`;
+      createProductHtml(product);
     });
   }
   basketQuantity();
@@ -110,7 +158,6 @@ function removeArticle() {
       );
       cart = cart.filter((item) => item != articleSupprimer);
       saveCartLS(cart);
-      console.log(cart);
       alert("article supprimé !");
       const getSection = document.querySelector("#cart__items");
       getSection.removeChild(event.target.closest("article"));
@@ -128,7 +175,6 @@ function removeArticle() {
 function changeQuantityArticle() {
   const inputQuantityListe = document.querySelectorAll(".itemQuantity");
   inputQuantityListe.forEach((article) => {
-    console.log(article);
     article.addEventListener("change", async function (event) {
       let cart = getCart();
       const idChangeQuantity = event.target
@@ -141,7 +187,7 @@ function changeQuantityArticle() {
         (element) =>
           element.idSelectProduct == idChangeQuantity &&
           element.colorSelectProduct == colorChangeQuantity
-      ).quantity = article.value;
+      ).quantity = article.value > 100 ? 100 : article.value;
       saveCartLS(cart);
       basketQuantity();
       const cartDom = await fetchProducts();

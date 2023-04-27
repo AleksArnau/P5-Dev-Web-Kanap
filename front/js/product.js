@@ -70,6 +70,8 @@ fetch(`http://localhost:3000/api/products/${kanapPageId}`)
         } else {
           basketProduct.quantity =
             parseInt(basketProduct.quantity) + parseInt(quantityKanapDoc.value);
+          basketProduct.quantity =
+            basketProduct.quantity > 100 ? 100 : basketProduct.quantity;//soutenance
         }
         saveBasket(basketValues);
         alert(
